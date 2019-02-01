@@ -1,6 +1,6 @@
 import React from 'react';
 
-function FileTabs({allFiles, fileSelected}) {
+function FileTabs({allFiles, filesWithChanges, fileSelected}) {
     
     //function to call parent function
     function fileClicked(event, fileId) {
@@ -15,13 +15,34 @@ function FileTabs({allFiles, fileSelected}) {
 
     for(let fileId in allFiles) {
 
-        //add a selectable element
-        allFileTabs.push(
-            <button key={allFiles[fileId].fileId} 
-                    onClick={(event) => fileClicked(event, fileId)}>
-                {allFiles[fileId].currentName}
-            </button>
-        );
+        //get the file name
+        let fileName = allFiles[fileId].currentName;
+
+        //if this file has had some changes in it (create file, insert, or delete)
+        if(filesWithChanges[fileId]) {
+
+            //add an indicator to the file name
+            fileName = fileName + " *";
+
+            //add a selectable element with the file name and a recentFileChange class
+            allFileTabs.push(
+                <button key={allFiles[fileId].fileId} 
+                        className="recentFileChange"
+                        onClick={(event) => fileClicked(event, fileId)}>
+                    {fileName}
+                </button>
+            );
+
+        } else {
+            
+            //add a selectable element with the file name
+            allFileTabs.push(
+                <button key={allFiles[fileId].fileId} 
+                        onClick={(event) => fileClicked(event, fileId)}>
+                    {fileName}
+                </button>
+            );
+        }
     }
 
     return (<div>{allFileTabs}</div>);

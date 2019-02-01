@@ -21,7 +21,8 @@ class PlaybackWindow extends Component {
             latestEvent: null,              //the latest event played back (displayed in the EventSummary)
             allFiles: {},                   //an object with all of the files (key are file ids)
             allDirs: {},                    //an object with all of the directories (keys are dir ids)
-            code: {}                        //an object with all of the insert events for each file (keys are file ids)
+            code: {},                       //an object with all of the insert events for each file (keys are file ids)
+            filesWithChanges: {}            //an object with the ids of files that have changes in them
         };
     }
 
@@ -248,13 +249,11 @@ class PlaybackWindow extends Component {
                 newCodeLists: {},               //the changes to code that have happened due to the latest events
                 newAllFiles: prevState.allFiles,//all the files in the playback so far
                 newAllDirs: prevState.allDirs,  //all the dirs in the playback so far
+                newFilesWithChanges: {}         //holds the ids of all the files with a change in them
             };
 
             //holds the active file, init to the previous active file if there is one
             let newActiveFile = this.state.codeEventsIndex > 0 ? prevState.activeFile : null;
-
-            //holds the latest event in the group
-            let latestEvent = latestEvents[latestEvents.length - 1];
 
             //go through all of the recent events
             latestEvents.forEach(event => {
@@ -361,6 +360,9 @@ class PlaybackWindow extends Component {
                 }
             });
 
+            //holds the latest event in the group
+            let latestEvent = latestEvents[latestEvents.length - 1];
+
             //get the previous state of the code so it can be updated with the latest changes
             let newCode = prevState.code;
 
@@ -379,7 +381,8 @@ class PlaybackWindow extends Component {
                 latestEvent: latestEvent,
                 allFiles: codeData.newAllFiles,
                 allDirs: codeData.newAllDirs,
-                code: newCode
+                code: newCode,
+                filesWithChanges: codeData.newFilesWithChanges
             };
         });
     }
@@ -396,6 +399,9 @@ class PlaybackWindow extends Component {
 
         //create an empty code list in the map
         codeData.newCodeLists[event.fileId] = new CodeList([]);
+
+        //mark this file as one that has changed
+        codeData.newFilesWithChanges[event.fileId] = event.fileId;
     }
 
     reverseCreateFile(event, codeData, prevState) {
@@ -539,6 +545,10 @@ class PlaybackWindow extends Component {
         
         //add the insert event 
         codeData.newCodeLists[event.fileId].addCode(event);
+
+        //mark this file as one that has changed
+        codeData.newFilesWithChanges[event.fileId] = event.fileId;
+
     }
 
     reverseInsert(event, codeData, prevState) {
@@ -572,6 +582,9 @@ class PlaybackWindow extends Component {
         
         //delete the code event
         codeData.newCodeLists[event.fileId].deleteCode(event.previousNeighborId);
+
+        //mark this file as one that has changed
+        codeData.newFilesWithChanges[event.fileId] = event.fileId;
     }
 
     reverseDelete(event, codeData, prevState) {
@@ -615,7 +628,7 @@ class PlaybackWindow extends Component {
             <div>
                 <PlaybackControls totalEventCount={this.props.playbackData.codeEvents.length} sliderValue={this.state.codeEventsIndex} autoPlaying={this.state.timerId !== null} togglePlayPause={this.togglePlayPause} moveToEventIndex={this.moveToEventIndex} moveForward={this.moveForward} moveBackward={this.moveBackward} />
                 <EventSummary latestEvent={this.state.latestEvent} eventIndex={this.state.codeEventsIndex} totalEventCount={this.props.playbackData.codeEvents.length} />
-                <FileTabs allFiles={this.state.allFiles} fileSelected={this.fileSelected} />
+                <FileTabs allFiles={this.state.allFiles} filesWithChanges={this.state.filesWithChanges} fileSelected={this.fileSelected} />
                 <CodeWindow code={this.state.code[this.state.activeFile]} />
                 <FileSystemView allFiles={this.state.allFiles} allDirs={this.state.allDirs} fileSelected={this.fileSelected}/>
             </div>

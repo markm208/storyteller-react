@@ -24,7 +24,7 @@ class App extends Component {
     componentDidMount() {
 
         //fetch the playback data from the server and store it in the state
-        this.setState({ playbackData: fakeFetch3() });
+        this.setState({ playbackData: fakeFetch2() });
     }
 
     render() {
