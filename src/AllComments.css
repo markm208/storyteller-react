@@ -1,0 +1,9 @@
+.commentWindow {
+    float: right;
+    overflow-y: auto;
+    height: 85vh;
+    border-color: darkgreen;
+    border-width: 1px;
+    border-style: solid;
+
+}

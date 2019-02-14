@@ -1,0 +1,8 @@
+.commentPoint {
+    padding: 10px;
+    margin: 10px;
+    background-color: lightgray;
+    border-color: darkgreen;
+    border-width: 1px;
+    border-style: solid;
+}

@@ -1,0 +1,8 @@
+.commentText {
+    padding: 20px;
+    margin: 10px;
+    border-width: 1px;
+    border-color: lightgreen;
+    border-style: solid;
+    background-color: white
+}

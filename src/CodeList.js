@@ -59,7 +59,7 @@ class CodeList {
             next: null
         };
 
-        //make the last node refer to the tail node
+        //make the second to last node refer to the tail node
         latestNode.next = this.endNode;
     }
     
@@ -74,7 +74,7 @@ class CodeList {
             console.log(`Inside retrieveNodeOnId()`);        
             console.log(eventId);        
             this.print();
-            throw `Node node with the id: does not ${eventId} exist in the code list`;
+            throw `Node node with the id: ${eventId} does not exist in the code list`;
         }
 
         return node;

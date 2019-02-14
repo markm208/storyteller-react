@@ -1,4 +1,5 @@
 import React from 'react';
+import './CodeSpan.css';
 
 function CodeSpan({codeEvent}) {
 
@@ -17,6 +18,15 @@ function CodeSpan({codeEvent}) {
         delete codeEvent.recentInsert;
     }
     
+    if(codeEvent.commentHighlight) {
+
+        //add the class
+        classNames.push("commentHighlight");
+        
+        //remove the property from the event so it is not marked as a comment highlight after this step
+        delete codeEvent.commentHighlight;
+    }
+
     //handle newlines, tabs, spaces, and regular code by creating a span or br
     if(codeEvent.character === "\n") {
         
