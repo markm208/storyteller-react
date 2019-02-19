@@ -2,6 +2,32 @@ import React, { Component } from 'react';
 
 class FileSystemView extends Component {
 
+    shouldComponentUpdate (nextProps) {
+        for(let dirId in this.props.allDirs) {
+            if(dirId in nextProps.allDirs === false) {
+                return true;
+            }
+        }
+        for(let dirId in nextProps.allDirs) {
+            if(dirId in this.props.allDirs === false) {
+                return true;
+            }
+        }
+
+        for(let fileId in this.props.allFiles) {
+            if(fileId in nextProps.allFiles === false) {
+                return true;
+            }
+        }
+
+        for(let fileId in nextProps.allFiles) {
+            if(fileId in this.props.allFiles === false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
     //This is a recursive function that builds up a global view of the file system.
     //Two objects will be passed in to the function that holds info about the all 
     //the directories (allDirs) and all of the files (allFiles).
@@ -135,6 +161,7 @@ class FileSystemView extends Component {
     }
     
     render() {
+        //console.log("re-rendering FileSystemView");
 
         //hold a global view of the file system
         const fileSystemObject = {};

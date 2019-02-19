@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 
-class PlaybackControls extends Component {
+class PlaybackControls extends PureComponent {
 
     //moves the playback forward one step
     nextStep = () => {

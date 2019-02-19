@@ -73,7 +73,7 @@ class CodeList {
         if(!node) {
             console.log(`Inside retrieveNodeOnId()`);        
             console.log(eventId);        
-            this.print();
+            //this.print();
             throw `Node node with the id: ${eventId} does not exist in the code list`;
         }
 
@@ -94,11 +94,12 @@ class CodeList {
         //get the node behind the new 
         let previousNode = this.retrieveNodeOnId(event.previousNeighborId);
 
-        //create a new node with the correct links
+        //create a new node with the correct links that has not been deleted
         let newNode = {
             prev: previousNode,
             event: event,
-            next: previousNode.next
+            next: previousNode.next,
+            isDeleted: false
         };
 
         //adjust the nodes around the new node
@@ -109,18 +110,67 @@ class CodeList {
         this.eventMap[event.id] = newNode;
     }
 
-    //deletes a node from the list based on an id
-    deleteCode(eventId) {
+    //removes a node from the list based on an id
+    // removeCode(eventId) {
 
-        //get the node to remove
-        let nodeToDelete = this.retrieveNodeOnId(eventId);
+    //     //get the node to remove
+    //     let nodeToDelete = this.retrieveNodeOnId(eventId);
         
-        //adjust the neighbors of the deleted node
-        nodeToDelete.prev.next = nodeToDelete.next;
-        nodeToDelete.next.prev = nodeToDelete.prev;
+    //     //adjust the neighbors of the deleted node
+    //     nodeToDelete.prev.next = nodeToDelete.next;
+    //     nodeToDelete.next.prev = nodeToDelete.prev;
 
-        //remove the node from the map
-        delete this.eventMap[eventId];
+    //     //remove the node from the map
+    //     delete this.eventMap[eventId];
+    // }
+
+    //used to display an insert event in a playback in the forward direction
+    insert(event) {
+
+        //if the event is already in the list because it was inserted and then reverse inserted
+        if(event.id in this.eventMap) {
+
+            //retrieve a previously deleted event
+            const deletedInsert = this.retrieveNodeOnId(event.id);
+
+            //mark it as not deleted
+            deletedInsert.isDeleted = false;
+
+        } else { //this event has never been played back
+
+            //add the new insert event to the code
+            this.addCode(event);
+        }
+    }
+
+    //used to reverse an insert in the backward direction
+    reverseInsert(eventId) {
+
+        //get the node with the insert
+        const deletedInsert = this.retrieveNodeOnId(eventId);
+
+        //mark it as deleted
+        deletedInsert.isDeleted = true;
+    }
+
+    //used to delete an insert event in the forward direction
+    delete(eventId) {
+
+        //get the insert event that is about to be deleted
+        const deletedInsert = this.retrieveNodeOnId(eventId);
+        
+        //mark it as deleted
+        deletedInsert.isDeleted = true;
+    }
+
+    //used to reverse a delete in the backward direction
+    reverseDelete(eventId) {
+
+        //get the insert event that is being reverse deleted
+        const deletedInsert = this.retrieveNodeOnId(eventId);
+
+        //mark it as not deleted
+        deletedInsert.isDeleted = false;
     }
 
     //converts the linked list to an array of events
@@ -134,7 +184,15 @@ class CodeList {
         
         //move through the nodes (except the start and end node)
         while(currentNode.next != null) {
-            events.push(currentNode.event);
+
+            //if the node has not been deleted
+            if(currentNode.isDeleted === false) {
+
+                //get the current node's insert event and add it to the return array
+                events.push(currentNode.event);
+            }
+
+            //move on to the next node
             currentNode = currentNode.next;
         }
 

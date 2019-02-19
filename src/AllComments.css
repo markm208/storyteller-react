@@ -1,9 +1,12 @@
 .commentWindow {
     float: right;
-    overflow-y: auto;
-    height: 85vh;
+    width: 30%;
     border-color: darkgreen;
     border-width: 1px;
     border-style: solid;
+}
 
+.allComments {
+    overflow-y: auto;
+    height: 85vh;
 }

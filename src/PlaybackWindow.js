@@ -2,7 +2,8 @@ import React, { PureComponent } from 'react';
 import FileTabs from './FileTabs';
 import CodeWindow from './CodeWindow';
 import PlaybackControls from './PlaybackControls';
-import OrderedCodeList from './OrderedCodeList';
+//import OrderedCodeList from './OrderedCodeList';
+import CodeList from './CodeList';
 import FileSystemView from './FileSystemView';
 import EventSummary from './EventSummary';
 import AllComments from './AllComments';
@@ -28,47 +29,47 @@ class PlaybackWindow extends PureComponent {
         };
     }
 
-    //called when the props change (after a fetch of the playback data from the server)
-    componentDidUpdate(prevProps) {
+    // //called when the props change (after a fetch of the playback data from the server)
+    // componentDidUpdate(prevProps) {
 
-        //the initial value for playbackData.codeEvents in the App constructor is an empty array
-        //after fetching the data from a server it has playback events in it
+    //     //the initial value for playbackData.codeEvents in the App constructor is an empty array
+    //     //after fetching the data from a server it has playback events in it
 
-        //if the code events get filled in from the server
-        if (prevProps.playbackData.codeEvents.length === 0 && this.props.playbackData.codeEvents.length > 0) {
+    //     //if the code events get filled in from the server
+    //     if (prevProps.playbackData.codeEvents.length === 0 && this.props.playbackData.codeEvents.length > 0) {
 
-            //add all the code so that each insert event backs up to its prev neighbor
-            const orderedCodeLists = this.buildOrderedCodeLists(this.props.playbackData.codeEvents);
+    //         //add all the code so that each insert event backs up to its prev neighbor
+    //         const orderedCodeLists = this.buildOrderedCodeLists(this.props.playbackData.codeEvents);
 
-            //add this new object to the state
-            this.setState({ code: orderedCodeLists });
-        }
-    }
+    //         //add this new object to the state
+    //         this.setState({ code: orderedCodeLists });
+    //     }
+    // }
 
-    //adds every insert event in the playback to a list where each insert is in front of its previous neighbor
-    buildOrderedCodeLists = (codeEvents) => {
+    // //adds every insert event in the playback to a list where each insert is in front of its previous neighbor
+    // buildOrderedCodeLists = (codeEvents) => {
 
-        //holds all of the ordered code lists keyed by file id
-        const orderedCodeLists = {};
+    //     //holds all of the ordered code lists keyed by file id
+    //     const orderedCodeLists = {};
 
-        //go through all of the events in the playback
-        codeEvents.forEach(codeEvent => {
+    //     //go through all of the events in the playback
+    //     codeEvents.forEach(codeEvent => {
 
-            //if this is a create file event
-            if (codeEvent.type === "Create File") {
+    //         //if this is a create file event
+    //         if (codeEvent.type === "Create File") {
 
-                //create an empty ordered code list
-                orderedCodeLists[codeEvent.fileId] = new OrderedCodeList();
+    //             //create an empty ordered code list
+    //             orderedCodeLists[codeEvent.fileId] = new OrderedCodeList();
 
-            } else if (codeEvent.type === "Insert") { //an insert event
+    //         } else if (codeEvent.type === "Insert") { //an insert event
 
-                //add the code in its correct place
-                orderedCodeLists[codeEvent.fileId].addCode(codeEvent);
-            }
-        });
+    //             //add the code in its correct place
+    //             orderedCodeLists[codeEvent.fileId].addCode(codeEvent);
+    //         }
+    //     });
 
-        return orderedCodeLists;
-    }
+    //     return orderedCodeLists;
+    // }
 
     //-- UI Event handlers --
     //called when a file is selected to be displayed in the code window
@@ -303,10 +304,19 @@ class PlaybackWindow extends PureComponent {
             //holds the ids of recently inserted code
             const newRecentInserts = {};
 
-            let newHighlightedCode = {};
+            //holds an array of highlighted code
+            let newHighlightedCode = [];
 
             //holds the active file, init to the previous active file if there is one
             let newActiveFile = this.state.codeEventsIndex > 0 ? prevState.activeFile : null;
+
+            //the new state of all the files and dirs
+            let newAllFiles = {};
+            let newAllDirs = {};
+
+            //copy the previous state of the files and dirs
+            Object.assign(newAllFiles, prevState.allFiles);
+            Object.assign(newAllDirs, prevState.allDirs);
 
             //go through all of the recent events
             latestEvents.forEach(event => {
@@ -316,8 +326,11 @@ class PlaybackWindow extends PureComponent {
 
                     if (latestDirection === "forward") {
 
+                        //create a new code list for the new file
+                        prevState.code[event.fileId] = new CodeList([]);
+
                         //add a new file
-                        prevState.allFiles[event.fileId] = {
+                        newAllFiles[event.fileId] = {
                             fileId: event.fileId,
                             parentDirectoryId: event.parentDirectoryId,
                             currentName: event.initialName
@@ -331,8 +344,11 @@ class PlaybackWindow extends PureComponent {
 
                     } else { //moving backward
 
+                        //remove the code list
+                        delete prevState.code[event.fileId];
+
                         //delete the file info from the object with all files
-                        delete prevState.allFiles[event.fileId];
+                        delete newAllFiles[event.fileId];
                     }
 
                 } else if (event.type === "Delete File") {
@@ -340,12 +356,12 @@ class PlaybackWindow extends PureComponent {
                     if (latestDirection === "forward") {
 
                         //delete the file info from the object with all files
-                        delete prevState.allFiles[event.fileId];
+                        delete newAllFiles[event.fileId];
 
                     } else { //moving backward
 
                         //add the file back
-                        prevState.allFiles[event.fileId] = {
+                        newAllFiles[event.fileId] = {
                             fileId: event.fileId,
                             parentDirectoryId: event.parentDirectoryId,
                             currentName: event.fileName //<- the name property is different in the "Delete File" than in a "Create File" event
@@ -359,9 +375,9 @@ class PlaybackWindow extends PureComponent {
 
                     if (latestDirection === "forward") {
 
-                        //make the code in the ordered code list visible
-                        prevState.code[event.fileId].insertCode(event.id);
-
+                        //insert the code 
+                        prevState.code[event.fileId].insert(event);
+                        
                         //add this event to the recent inserts
                         newRecentInserts[event.id] = event.id;
 
@@ -371,7 +387,7 @@ class PlaybackWindow extends PureComponent {
                     } else { //moving backward
 
                         //make the code in the ordered code list invisible
-                        prevState.code[event.fileId].deleteCode(event.id);
+                        prevState.code[event.fileId].reverseInsert(event.id);
                     }
 
                     //if this is the last event, make this file active
@@ -382,7 +398,7 @@ class PlaybackWindow extends PureComponent {
                     if (latestDirection === "forward") {
 
                         //make the deleted code in the ordered code list invisible
-                        prevState.code[event.fileId].deleteCode(event.previousNeighborId);
+                        prevState.code[event.fileId].delete(event.previousNeighborId);
 
                         //mark this file as one that has changed
                         newFilesWithChanges[event.fileId] = event.fileId;
@@ -390,7 +406,7 @@ class PlaybackWindow extends PureComponent {
                     } else { //moving backward
 
                         //make the deleted code in the ordered list visible
-                        prevState.code[event.fileId].insertCode(event.previousNeighborId);
+                        prevState.code[event.fileId].reverseDelete(event.previousNeighborId);
                     }
 
                     //if this is the last event, make this file active
@@ -401,12 +417,12 @@ class PlaybackWindow extends PureComponent {
                     if (latestDirection === "forward") {
 
                         //change to the new name
-                        prevState.allFiles[event.fileId].currentName = event.newFileName;
+                        newAllFiles[event.fileId].currentName = event.newFileName;
 
                     } else { //moving backward
 
                         //change back to the old name
-                        prevState.allFiles[event.fileId].currentName = event.oldFileName;
+                        newAllFiles[event.fileId].currentName = event.oldFileName;
                     }
 
                     //if this is the last event, make this file active
@@ -417,12 +433,12 @@ class PlaybackWindow extends PureComponent {
                     if (latestDirection === "forward") {
 
                         //change the parent dir id
-                        prevState.allFiles[event.fileId].parentDirectoryId = event.newParentDirectoryId;
+                        newAllFiles[event.fileId].parentDirectoryId = event.newParentDirectoryId;
 
                     } else { //moving backward
 
                         //change the parent dir id back to the original
-                        prevState.allFiles[event.fileId].parentDirectoryId = event.oldParentDirectoryId;
+                        newAllFiles[event.fileId].parentDirectoryId = event.oldParentDirectoryId;
                     }
 
                     //if this is the last event, make this file active
@@ -433,7 +449,7 @@ class PlaybackWindow extends PureComponent {
                     if (latestDirection === "forward") {
 
                         //add a new directory
-                        prevState.allDirs[event.directoryId] = {
+                        newAllDirs[event.directoryId] = {
                             dirId: event.directoryId,
                             parentDirectoryId: event.parentDirectoryId,
                             currentName: event.initialName
@@ -442,7 +458,7 @@ class PlaybackWindow extends PureComponent {
                     } else { //moving backward
 
                         //remove the directory
-                        delete prevState.allDirs[event.directoryId];
+                        delete newAllDirs[event.directoryId];
                     }
 
                 } else if (event.type === "Delete Directory") {
@@ -450,12 +466,12 @@ class PlaybackWindow extends PureComponent {
                     if (latestDirection === "forward") {
 
                         //remove the directory
-                        delete prevState.allDirs[event.directoryId];
+                        delete newAllDirs[event.directoryId];
 
                     } else { //moving backward
 
                         //add the directory back
-                        prevState.allDirs[event.directoryId] = {
+                        newAllDirs[event.directoryId] = {
                             dirId: event.directoryId,
                             parentDirectoryId: event.parentDirectoryId,
                             currentName: event.directoryName
@@ -467,12 +483,12 @@ class PlaybackWindow extends PureComponent {
                     if (latestDirection === "forward") {
 
                         //change the name
-                        prevState.allDirs[event.directoryId].currentName = event.newDirectoryName;
+                        newAllDirs[event.directoryId].currentName = event.newDirectoryName;
 
                     } else { //moving backward
 
                         //change the name back to the original
-                        prevState.allDirs[event.directoryId].currentName = event.oldDirectoryName;
+                        newAllDirs[event.directoryId].currentName = event.oldDirectoryName;
                     }
 
                 } else if (event.type === "Move Directory") {
@@ -480,18 +496,22 @@ class PlaybackWindow extends PureComponent {
                     if (latestDirection === "forward") {
 
                         //change the parent dir id
-                        prevState.allDirs[event.directoryId].parentDirectoryId = event.newParentDirectoryId;
+                        newAllDirs[event.directoryId].parentDirectoryId = event.newParentDirectoryId;
 
                     } else { //moving backward
 
                         //change the parent dir id back
-                        prevState.allDirs[event.directoryId].parentDirectoryId = event.oldParentDirectoryId;
+                        newAllDirs[event.directoryId].parentDirectoryId = event.oldParentDirectoryId;
                     }
                 }
             });
 
             //holds the latest event in the group
-            let latestEvent = latestEvents[latestEvents.length - 1];
+            //let latestEvent = latestEvents[latestEvents.length - 1];
+            
+            //get the event right before the new code event index (or the first event if at the beginning) to see
+            //if there is a comment so that I can highlight the comment text
+            let latestEvent = this.props.playbackData.codeEvents[newCodeEventsIndex > 0 ? (newCodeEventsIndex - 1) : 0];
 
             //if the latest event has a comment associated with it
             if (this.props.playbackData.allComments[latestEvent.id]) {
@@ -518,11 +538,12 @@ class PlaybackWindow extends PureComponent {
                 codeEventsIndex: newCodeEventsIndex,
                 activeFile: newActiveFile,
                 latestEvent: latestEvent,
-                allFiles: prevState.allFiles,
-                allDirs: prevState.allDirs,
+                allFiles: newAllFiles,
+                allDirs: newAllDirs,
                 filesWithChanges: newFilesWithChanges,
                 recentInserts: newRecentInserts,
-                commentHighlightedCode: newHighlightedCode
+                commentHighlightedCode: newHighlightedCode,
+                code: prevState.code
             };
         });
     }
