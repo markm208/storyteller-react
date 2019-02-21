@@ -1,3 +1,9 @@
+# Rewrite of Storyteller with React
+
+This is an experimental repo that holds a rewrite of storyteller using React. The original repo can be found [here](https://github.com/markm208/storyteller).
+
+---
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
