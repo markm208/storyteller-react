@@ -1,0 +1,7 @@
+.commentMarker {
+    width: 1px;
+    background-color: inherit;
+    position: relative;
+    top: 0px;
+    background-color:rgba(0, 120, 0, 1.0);
+}

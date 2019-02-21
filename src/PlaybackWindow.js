@@ -7,6 +7,7 @@ import CodeList from './CodeList';
 import FileSystemView from './FileSystemView';
 import EventSummary from './EventSummary';
 import AllComments from './AllComments';
+import Slider from './Slider';
 
 class PlaybackWindow extends PureComponent {
 
@@ -552,12 +553,35 @@ class PlaybackWindow extends PureComponent {
 
         return (
             <div>
-                <AllComments allCommentPoints={this.props.playbackData.allComments} commentSelected={this.commentSelected} />
-                <PlaybackControls totalEventCount={this.props.playbackData.codeEvents.length} sliderValue={this.state.codeEventsIndex} autoPlaying={this.state.timerId !== null} togglePlayPause={this.togglePlayPause} moveToEventIndex={this.moveToEventIndex} moveForward={this.moveForward} moveBackward={this.moveBackward} />
-                <EventSummary latestEvent={this.state.latestEvent} eventIndex={this.state.codeEventsIndex} totalEventCount={this.props.playbackData.codeEvents.length} />
-                <FileTabs allFiles={this.state.allFiles} filesWithChanges={this.state.filesWithChanges} fileSelected={this.fileSelected} />
-                <CodeWindow code={this.state.code[this.state.activeFile]} recentInserts={this.state.recentInserts} commentHighlightedCode={this.state.commentHighlightedCode} />
-                <FileSystemView allFiles={this.state.allFiles} allDirs={this.state.allDirs} fileSelected={this.fileSelected} />
+                <AllComments 
+                    allCommentPoints={this.props.playbackData.allComments} 
+                    commentSelected={this.commentSelected} />
+                <PlaybackControls 
+                    autoPlaying={this.state.timerId !== null} 
+                    togglePlayPause={this.togglePlayPause} 
+                    moveForward={this.moveForward} 
+                    moveBackward={this.moveBackward} />
+                <Slider 
+                    totalEventCount={this.props.playbackData.codeEvents.length} 
+                    sliderValue={this.state.codeEventsIndex} 
+                    allCommentPoints={this.props.playbackData.allComments} 
+                    moveToEventIndex={this.moveToEventIndex} />
+                <EventSummary 
+                    latestEvent={this.state.latestEvent} 
+                    eventIndex={this.state.codeEventsIndex} 
+                    totalEventCount={this.props.playbackData.codeEvents.length} />
+                <FileTabs 
+                    allFiles={this.state.allFiles} 
+                    filesWithChanges={this.state.filesWithChanges} 
+                    fileSelected={this.fileSelected} />
+                <CodeWindow 
+                    code={this.state.code[this.state.activeFile]} 
+                    recentInserts={this.state.recentInserts} 
+                    commentHighlightedCode={this.state.commentHighlightedCode} />
+                <FileSystemView 
+                    allFiles={this.state.allFiles} 
+                    allDirs={this.state.allDirs} 
+                    fileSelected={this.fileSelected} />
             </div>
         );
     }

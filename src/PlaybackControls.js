@@ -53,16 +53,6 @@ class PlaybackControls extends PureComponent {
         }
     }
 
-    //called when the slider moves
-    moveSlider = (event) => {
-
-        //get the value of the slider
-        const newSliderValue = event.target.value;
-        
-        //move the playback to that position
-        this.props.moveToEventIndex(newSliderValue);
-    }
-
     render() {
         return (
             <div>
@@ -73,7 +63,6 @@ class PlaybackControls extends PureComponent {
                 <button onClick={this.nextStep}>&gt;</button>
                 <button onClick={this.nextComment}>&gt;&gt;</button>
                 <button onClick={this.moveToEnd}>&gt;&gt;&gt;</button>
-                <input id="eventSlider" type="range" min="0" max={this.props.totalEventCount} step="1" value={this.props.sliderValue} onChange={this.moveSlider} />
             </div>
         );    
     }
